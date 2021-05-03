@@ -1,0 +1,47 @@
+{
+  "comments": [
+    {
+      "offset": 0,
+      "length": 4,
+      "text": "Number of Files"
+    },
+    {
+      "offset": 4,
+      "length": 4,
+      "text": "PCL Offset"
+    },
+    {
+      "offset": 8,
+      "length": 4,
+      "text": "PCL Length"
+    },
+    {
+      "offset": 12,
+      "length": 4,
+      "text": "Sound File Offset"
+    },
+    {
+      "offset": 16,
+      "length": 4,
+      "text": "Sound File Length"
+    },
+    {
+      "offset": 20,
+      "length": 4,
+      "text": "LNK Offset"
+    },
+    {
+      "offset": 24,
+      "length": 4,
+      "text": "LNK Length"
+    }
+  ],
+  "highlights": [],
+  "data_types": [
+    {
+      "offset": 0,
+      "length": 28,
+      "type": "s32le"
+    }
+  ]
+}
