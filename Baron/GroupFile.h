@@ -44,7 +44,7 @@ namespace baron {
             return indices.size();
         }
 
-        void *ReadIndex(unsigned int index, int *outLength);
+        uint8_t *ReadIndex(unsigned int index, int *outLength);
 
     protected:
     private:

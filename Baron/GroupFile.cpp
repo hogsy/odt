@@ -62,7 +62,7 @@ GroupFile::~GroupFile() {
     delete buffer;
 }
 
-void *GroupFile::ReadIndex(unsigned int index, int *outLength) {
+uint8_t *GroupFile::ReadIndex(unsigned int index, int *outLength) {
     if (index >= indices.size()) {
         return nullptr;
     }
