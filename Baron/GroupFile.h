@@ -34,6 +34,8 @@ namespace baron {
             GF_ERR_SUCCESS,
             GF_ERR_IO,
             GF_ERR_EMPTY_FILE,
+
+            GF_MAX_ERRORS
         };
 
         explicit GroupFile(const char *path, unsigned int *errCode);
