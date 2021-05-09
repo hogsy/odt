@@ -1,8 +1,8 @@
 project(BaronViewer)
 
 add_executable(BaronViewer
-        ../Baron/GroupFile.cpp  ../Baron/GroupFile.h
-        ../Baron/Level.cpp      ../Baron/Level.h
+        ../Baron/GroupFile.cpp
+
         BaronViewer.cpp
         EventReceiver.cpp)
 

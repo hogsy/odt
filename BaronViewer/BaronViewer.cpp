@@ -24,45 +24,156 @@ SOFTWARE.
 
 #include "BaronViewer.h"
 
-#define BARON_VIEWER_TITLE L"Baron Viewer"
-#define BARON_VIEWER_WIDTH 1024
-#define BARON_VIEWER_HEIGHT 768
-
-static Baron::GroupFile *effectsGroup;
-
-irr::video::IVideoDriver *videoDriver;
-irr::scene::ISceneManager *sceneManager;
-irr::io::IFileSystem *fileSystem;
-irr::gui::IGUIEnvironment *guiEnvironment;
-
 #ifdef _IRR_WINDOWS_
 #pragma comment( lib, "Irrlicht.lib" )
 #pragma comment( linker, "/subsystem:windows /ENTRY:mainCRTStartup" )
 #endif
 
-int main( int argc, char **argv ) {
-	irr::IrrlichtDevice *device = irr::createDevice(
-	        irr::video::EDT_OPENGL,
-	        irr::core::dimension2du( BARON_VIEWER_WIDTH, BARON_VIEWER_HEIGHT ),
-	        16, false, false, false,
-	        0 );
-	if ( device == nullptr ) {
-		printf( "Failed to setup device!\n" );
-		return EXIT_FAILURE;
+#define BARON_VIEWER_TITLE L"Baron Viewer"
+#define BARON_VIEWER_WIDTH 800
+#define BARON_VIEWER_HEIGHT 600
+
+static Baron::GroupFile *effectsGroup;
+
+namespace BaronViewer {
+	class App {
+	public:
+		static App *InitializeApp( int argc, char **argv );
+		static inline App *GetApp() {
+			return appInstance;
+		}
+
+		const char *GetCLArgument( const char *arg ) const;
+		bool HasCLArgument( const char *arg ) const;
+
+		int Run();
+
+		inline irr::IrrlichtDevice *GetDevice() const { return device; }
+		inline irr::video::IVideoDriver *GetVideoDriver() const { return videoDriver; }
+		inline irr::scene::ISceneManager *GetSceneManager() const { return sceneManager; }
+		inline irr::io::IFileSystem *GetFileSystem() const { return fileSystem; }
+		inline irr::gui::IGUIEnvironment *GetGUIEnvironment() const { return guiEnvironment; }
+
+	protected:
+	private:
+        inline App( int argc, char **argv ) : numCLArguments( argc ), CLArguments( argv ) {}
+        ~App();
+
+        bool InitializeIrrlicht();
+
+		irr::IrrlichtDevice *device{ nullptr };
+
+		irr::video::IVideoDriver *videoDriver{ nullptr };
+		irr::scene::ISceneManager *sceneManager{ nullptr };
+		irr::io::IFileSystem *fileSystem{ nullptr };
+		irr::gui::IGUIEnvironment *guiEnvironment{ nullptr };
+
+		int numCLArguments;
+		char **CLArguments;
+
+		static App *appInstance;
+	};
+}// namespace BaronViewer
+
+using namespace BaronViewer;
+
+App *App::appInstance = nullptr;
+App *App::InitializeApp( int argc, char **argv ) {
+	appInstance = new App( argc, argv );
+	appInstance->InitializeIrrlicht();
+
+	return appInstance;
+}
+
+App::~App() {
+    device->drop();
+}
+
+const char *App::GetCLArgument( const char *arg ) const {
+	for ( unsigned int i = 0; i < numCLArguments; ++i ) {
+		if ( strcmp( arg, CLArguments[ i ] ) != 0 ) {
+			continue;
+		}
+
+		if ( ( i + 1 ) >= numCLArguments ) {
+			break;
+		}
+
+        return CLArguments[ i + 1 ];
 	}
 
-	device->setWindowCaption( BARON_VIEWER_TITLE );
+    return nullptr;
+}
 
-	fileSystem     = device->getFileSystem();
-	videoDriver    = device->getVideoDriver();
-	guiEnvironment = device->getGUIEnvironment();
-	sceneManager   = device->getSceneManager();
+bool App::HasCLArgument( const char *arg ) const {
+	for ( unsigned int i = 0; i < numCLArguments; ++i ) {
+		if ( strcmp( arg, CLArguments[ i ] ) != 0 ) {
+			continue;
+		}
 
+		return true;
+	}
+
+    return false;
+}
+
+bool App::InitializeIrrlicht() {
+    device = irr::createDevice(
+            irr::video::EDT_OPENGL,
+            irr::core::dimension2du( BARON_VIEWER_WIDTH, BARON_VIEWER_HEIGHT ),
+            16, false, false, false,
+            0 );
+    if ( device == nullptr ) {
+        printf( "Failed to setup device!\n" );
+        return false;
+    }
+
+    device->setWindowCaption( BARON_VIEWER_TITLE );
+
+    fileSystem     = device->getFileSystem();
+    videoDriver    = device->getVideoDriver();
+    guiEnvironment = device->getGUIEnvironment();
+    sceneManager   = device->getSceneManager();
+    sceneManager->addCameraSceneNode();
+
+    return true;
+}
+
+int App::Run() {
+    irr::gui::IGUIStaticText *fpsCounter = guiEnvironment->addStaticText( L"FPS: ", irr::core::recti( 20, 20, 128, 32 ) );
+    fpsCounter->setOverrideColor( irr::video::SColor( 255, 255, 255, 255 ) );
+
+    int lastFPS = -1;
+    while ( device->run() ) {
+        if ( !device->isWindowActive() ) {
+            device->yield();
+            continue;
+        }
+
+        videoDriver->beginScene();
+
+        sceneManager->drawAll();
+        guiEnvironment->drawAll();
+
+        videoDriver->endScene();
+
+        int fps = videoDriver->getFPS();
+        if ( fps != lastFPS ) {
+            irr::core::stringw str = L"FPS: ";
+            str += fps;
+            fpsCounter->setText( str.c_str() );
+        }
+    }
+
+	return EXIT_SUCCESS;
+}
+
+static bool LoadBaronData() {
 	unsigned int errCode;
 	Baron::GroupFile groupFile( "LEVEL02/SECTOR01.ALL", &errCode );
 	if ( errCode != Baron::GroupFile::GF_ERR_SUCCESS ) {
 		printf( "Failed to open group file!\nERR: %d\n", errCode );
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	int lnkBufferLength;
@@ -70,7 +181,7 @@ int main( int argc, char **argv ) {
 	Baron::GroupFile lnkGroupFile( lnkBuffer, lnkBufferLength, &errCode );
 	if ( errCode != Baron::GroupFile::GF_ERR_SUCCESS ) {
 		printf( "Failed to open group file!\nERR: %d\n", errCode );
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	int size;
@@ -78,16 +189,16 @@ int main( int argc, char **argv ) {
 	/* fetch the PVL header, which is at the top */
 	const Baron::PVLHeader *hdr = ( Baron::PVLHeader * ) lvlData;
 
-	while ( device->run() ) {
-		videoDriver->beginScene();
+	return true;
+}
 
-		sceneManager->drawAll();
-		guiEnvironment->drawAll();
+int main( int argc, char **argv ) {
+	App *app = App::InitializeApp( argc, argv );
 
-		videoDriver->endScene();
+	if ( !LoadBaronData() ) {
+		printf( "Failed to load Baron data!\n" );
+		return EXIT_FAILURE;
 	}
 
-	device->drop();
-
-	return EXIT_SUCCESS;
+	return app->Run();
 }
