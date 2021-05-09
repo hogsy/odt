@@ -27,63 +27,62 @@ SOFTWARE.
 
 #include "GroupFile.h"
 
-using namespace baron;
+using namespace Baron;
 
-GroupFile::GroupFile(uint8_t *nBuffer, unsigned int nLength, unsigned int *errCode) :
-        buffer(nBuffer), length(nLength) {
-    *errCode = SetupIndexTable();
+GroupFile::GroupFile( uint8_t *nBuffer, unsigned int nLength, unsigned int *errCode ) : buffer( nBuffer ), length( nLength ) {
+	*errCode = SetupIndexTable();
 }
 
-GroupFile::GroupFile(const char *path, unsigned int *errCode) {
-    FILE *file = fopen(path, "rb");
-    if (file == nullptr) {
-        *errCode = GF_ERR_IO;
-        return;
-    }
+GroupFile::GroupFile( const char *path, unsigned int *errCode ) {
+	FILE *file = fopen( path, "rb" );
+	if ( file == nullptr ) {
+		*errCode = GF_ERR_IO;
+		return;
+	}
 
-    fseek(file, 0, SEEK_END);
-    length = ftell(file);
-    rewind(file);
-    if(length <= 0) {
-        *errCode = GF_ERR_IO;
-    } else {
-        buffer = new uint8_t[length];
-        fread(buffer, sizeof(uint8_t), length, file);
-        *errCode = SetupIndexTable();
-        if( *errCode != GF_ERR_SUCCESS ) {
-            delete buffer;
-        }
-    }
+	fseek( file, 0, SEEK_END );
+	length = ftell( file );
+	rewind( file );
+	if ( length <= 0 ) {
+		*errCode = GF_ERR_IO;
+	} else {
+		buffer = new uint8_t[ length ];
+		fread( buffer, sizeof( uint8_t ), length, file );
+		*errCode = SetupIndexTable();
+		if ( *errCode != GF_ERR_SUCCESS ) {
+			delete buffer;
+		}
+	}
 
-    fclose(file);
+	fclose( file );
 }
 
 GroupFile::~GroupFile() {
-    delete buffer;
+	delete buffer;
 }
 
-uint8_t *GroupFile::ReadIndex(unsigned int index, int *outLength) {
-    if (index >= indices.size()) {
-        return nullptr;
-    }
+uint8_t *GroupFile::ReadIndex( unsigned int index, int *outLength ) {
+	if ( index >= indices.size() ) {
+		return nullptr;
+	}
 
-    uint8_t *offsetPtr = buffer + indices[index].offset;
+	uint8_t *offsetPtr = buffer + indices[ index ].offset;
 
-    uint8_t *rb = new uint8_t[indices[index].length];
-    memcpy(rb, offsetPtr, indices[index].length);
-    *outLength = indices[index].length;
+	uint8_t *rb = new uint8_t[ indices[ index ].length ];
+	memcpy( rb, offsetPtr, indices[ index ].length );
+	*outLength = indices[ index ].length;
 
-    return rb;
+	return rb;
 }
 
 unsigned int GroupFile::SetupIndexTable() {
-    int numIndices = *buffer;
-    if (numIndices <= 0) {
-        return GF_ERR_EMPTY_FILE;
-    }
+	int numIndices = *buffer;
+	if ( numIndices <= 0 ) {
+		return GF_ERR_EMPTY_FILE;
+	}
 
-    indices.resize(numIndices);
-    memcpy(indices.data(), buffer + 4, sizeof(Index) * numIndices);
+	indices.resize( numIndices );
+	memcpy( indices.data(), buffer + 4, sizeof( Index ) * numIndices );
 
-    return GF_ERR_SUCCESS;
+	return GF_ERR_SUCCESS;
 }

@@ -27,38 +27,38 @@ SOFTWARE.
 #include <vector>
 #include <string>
 
-namespace baron {
-    class GroupFile {
-    public:
-        enum {
-            GF_ERR_SUCCESS,
-            GF_ERR_IO,
-            GF_ERR_EMPTY_FILE,
+namespace Baron {
+	class GroupFile {
+	public:
+		enum {
+			GF_ERR_SUCCESS,
+			GF_ERR_IO,
+			GF_ERR_EMPTY_FILE,
 
-            GF_MAX_ERRORS
-        };
+			GF_MAX_ERRORS
+		};
 
-        explicit GroupFile(const char *path, unsigned int *errCode);
-        GroupFile(uint8_t *nBuffer, unsigned int nLength, unsigned int *errCode);
-        ~GroupFile();
+		explicit GroupFile( const char *path, unsigned int *errCode );
+		GroupFile( uint8_t *nBuffer, unsigned int nLength, unsigned int *errCode );
+		~GroupFile();
 
-        inline unsigned int GetNumberOfIndices() const {
-            return indices.size();
-        }
+		inline unsigned int GetNumberOfIndices() const {
+			return indices.size();
+		}
 
-        uint8_t *ReadIndex(unsigned int index, int *outLength);
+		uint8_t *ReadIndex( unsigned int index, int *outLength );
 
-    protected:
-    private:
-        unsigned int SetupIndexTable();
+	protected:
+	private:
+		unsigned int SetupIndexTable();
 
-        struct Index {
-            int offset;
-            int length;
-        };
-        std::vector<Index> indices;
+		struct Index {
+			int offset;
+			int length;
+		};
+		std::vector< Index > indices;
 
-        uint8_t *buffer{ nullptr };
-        unsigned int length{ 0 };
-    };
-}
+		uint8_t *buffer{ nullptr };
+		unsigned int length{ 0 };
+	};
+}// namespace Baron

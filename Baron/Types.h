@@ -29,46 +29,58 @@ SOFTWARE.
 
 #include <cstdint>
 
-namespace baron {
-    struct RGB {
-        uint8_t r, g, b;
-        uint8_t cb;
-    };
+namespace Baron {
+	struct RGB {
+		uint8_t r, g, b;
+		uint8_t cb;
+	};
 
-    struct Vector3D {
-        int16_t x, y, z;
-        int16_t pad;
-    };
+	struct Vector3D {
+		int16_t x, y, z;
+		int16_t pad;
 
-    struct PVLHeader {
-        int8_t id[2]; /* P0 */
-        int16_t crc;
-        int16_t numPlatforms;
-        int16_t numLObjects;
-        int16_t numGObjects;
-        int16_t numLights;
-        int16_t numZones;
-        int16_t numEnemyZones;
-        int16_t numMonsters;
-        int16_t numIndices;
-        int16_t numMatrices;
-        int16_t numMObjects;
-        int16_t numExitNames;
-        int16_t numShapes;
-        int16_t numAnimBlinks;
-        int16_t numBlinks;
-        int16_t numVisibilities;
-        int16_t numCameras;
-        int16_t numHObjects;
-        int16_t mode;
-        int16_t trackDistance;
-        int16_t pad;
+		inline void operator+=( const Vector3D &v ) {
+			x += v.x;
+			y += v.y;
+			z += v.z;
+		}
 
-        RGB lightAmbience;
+		inline void operator-=( const Vector3D &v ) {
+			x -= v.x;
+			y -= v.y;
+			z -= v.z;
+		}
+	};
 
-        int16_t mapW, mapH;
+	struct PVLHeader {
+		int8_t id[ 2 ]; /* P0 */
+		int16_t crc;
+		int16_t numPlatforms;
+		int16_t numLObjects;
+		int16_t numGObjects;
+		int16_t numLights;
+		int16_t numZones;
+		int16_t numEnemyZones;
+		int16_t numMonsters;
+		int16_t numIndices;
+		int16_t numMatrices;
+		int16_t numMObjects;
+		int16_t numExitNames;
+		int16_t numShapes;
+		int16_t numAnimBlinks;
+		int16_t numBlinks;
+		int16_t numVisibilities;
+		int16_t numCameras;
+		int16_t numHObjects;
+		int16_t mode;
+		int16_t trackDistance;
+		int16_t pad;
 
-        Vector3D wind;
-        RGB fog;
-    };
-}
+		RGB lightAmbience;
+
+		int16_t mapW, mapH;
+
+		Vector3D wind;
+		RGB fog;
+	};
+}// namespace Baron
