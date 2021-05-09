@@ -1,3 +1,4 @@
+/*
 MIT License
 
 Copyright (c) 2021 Mark E Sowden <hogsy@oldtimes-software.com>
@@ -19,3 +20,20 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
+
+#pragma once
+
+#include <irrlicht/irrlicht.h>
+
+namespace BaronViewer {
+    class EventReceiver : public irr::IEventReceiver {
+    public:
+        EventReceiver();
+
+        bool OnEvent( const irr::SEvent &event ) override;
+        bool IsKeyDown( irr::EKEY_CODE keyCode ) const;
+
+    private:
+    };
+}
