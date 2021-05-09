@@ -1,0 +1,5 @@
+# O.D.T. Formats (to ensure they don't accidently go up!)
+*.ALL
+
+# Directories
+/resources/**
