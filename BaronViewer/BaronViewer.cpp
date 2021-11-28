@@ -168,16 +168,42 @@ int App::Run() {
 	return EXIT_SUCCESS;
 }
 
-static bool LoadBaronData() {
+namespace BaronViewer {
+	class Level {
+	public:
+		Level( unsigned int levelNum );
+
+		void LoadSector( unsigned int sectorNum );
+
+	protected:
+	private:
+		int curSector{ -1 };
+	};
+}
+
+Level::Level( unsigned int levelNum ) {
+
+}
+
+void Level::LoadSector( unsigned int sectorNum ) {
+
+}
+
+static bool LoadBaronData( unsigned int levelNum, unsigned int sectorNum ) {
+	char levelDir[ 16 ];
+	snprintf( levelDir, sizeof( levelDir ), "LEVEL%02d/", levelNum );
+	char sectorPath[ 32 ];
+	snprintf( sectorPath, sizeof( sectorPath ), "%sSECTOR%02d.ALL", levelDir, sectorNum );
+
 	unsigned int errCode;
-	Baron::GroupFile groupFile( "LEVEL02/SECTOR01.ALL", &errCode );
+	Baron::GroupFile sectorGroup( sectorPath, &errCode );
 	if ( errCode != Baron::GroupFile::GF_ERR_SUCCESS ) {
 		printf( "Failed to open group file!\nERR: %d\n", errCode );
 		return false;
 	}
 
 	int lnkBufferLength;
-	uint8_t *lnkBuffer = groupFile.ReadIndex( 2, &lnkBufferLength );
+	uint8_t *lnkBuffer = sectorGroup.ReadIndex( 2, &lnkBufferLength );
 	Baron::GroupFile lnkGroupFile( lnkBuffer, lnkBufferLength, &errCode );
 	if ( errCode != Baron::GroupFile::GF_ERR_SUCCESS ) {
 		printf( "Failed to open group file!\nERR: %d\n", errCode );
@@ -188,6 +214,7 @@ static bool LoadBaronData() {
 	uint8_t *lvlData = lnkGroupFile.ReadIndex( 0, &size );
 	/* fetch the PVL header, which is at the top */
 	const Baron::PVLHeader *hdr = ( Baron::PVLHeader * ) lvlData;
+	const char *map = ( const char * )( lvlData + 1 );
 
 	return true;
 }
@@ -195,7 +222,23 @@ static bool LoadBaronData() {
 int main( int argc, char **argv ) {
 	App *app = App::InitializeApp( argc, argv );
 
-	if ( !LoadBaronData() ) {
+	unsigned int levelNum;
+	const char *arg = app->GetCLArgument( "-level" );
+	if ( arg != nullptr ) {
+		levelNum = strtol( arg, nullptr, 10 );
+	} else {
+		levelNum = 2;
+	}
+
+	unsigned int sectorNum;
+	arg = app->GetCLArgument( "-sector" );
+	if ( arg != nullptr ) {
+		sectorNum = strtol( arg, nullptr, 10 );
+	} else {
+		sectorNum = 1;
+	}
+
+	if ( !LoadBaronData( levelNum, sectorNum ) ) {
 		printf( "Failed to load Baron data!\n" );
 		return EXIT_FAILURE;
 	}

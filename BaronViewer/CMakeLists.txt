@@ -1,6 +1,7 @@
 project(BaronViewer)
 
 add_executable(BaronViewer
+        ../Baron/FileSystem.cpp
         ../Baron/GroupFile.cpp
 
         BaronViewer.cpp
